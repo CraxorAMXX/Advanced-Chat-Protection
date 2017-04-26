@@ -1,11 +1,18 @@
 #include <amxxce>
 #include <amxmisc>
 
+#pragma semicolon 1
+
 new const gWarnMessage[ ]	=	"[AMXXCE] You have been detected for spam, please don't try again or you will be punished!";
+new const gBlockedWord[ ]	=	"[AMXXCE] You have been detected for using an illegal word!";
+
 new const KICK_MESSAGE[ ]	=	"You are gonna be KICKED for chat-spamming!";
 new const BAN_MESSAGE [ ]	=	"You are gonna be BANNED for chat-spamming!";
+
 new const KICKED_REASON[ ] 	=	"Kicked because you are bastard!";
 new const BANNED_REASON[ ] 	=	"Banned because you're bastard!";
+
+new const PluginName[ ]		=	"AdvancedChatProtection";
 
 new gLastUserMessage[MAX_PLAYERS_NUM + 1][192];
 new gBlockTimes[MAX_PLAYERS_NUM + 1];
@@ -19,9 +26,9 @@ public plugin_init( )
 {
 	register_plugin
 	(
-		"Advanced Chat Protection",
-		"1.0",
-		"Craxor"
+		PluginName,
+		AMXX_CE_VERSION,
+		AMXX_CE_AUTHOR
 	);
  
 	register_clcmd( "say", "hook_say" );
@@ -39,6 +46,8 @@ public client_putinserver( id )
 {
 	gLastUserMessage[id][0] = EOS;
 	gBlockTimes[ id ] = 0;
+	g_Flood[ id ] = 0;
+	g_Flooding[ id ] = 0.0;
 }
 
 public hook_say( id )
@@ -49,12 +58,13 @@ public hook_say( id )
 	}
 	
 	static Stroke[64], Size = 0;
-	new UserMessage[ 192 ]; 
+	new UserMessage[ 192 ], szUserName[ 32 ]; 
 
 	new Float:MAXCHAT = get_pcvar_float( gFloodTime );
 	new Float:nexTime = get_gametime();
 
 	read_args( UserMessage, cm( UserMessage ) );
+	get_user_name( id, szUserName, cm( szUserName ) );
 
 	for (Size = 0; Size < ArraySize(g_Stroke); Size++)
 	{
@@ -62,7 +72,7 @@ public hook_say( id )
 		
 		if (containi(UserMessage, Stroke) != -1)
 		{
-			client_print( id, print_chat, gWarnMessage );
+			client_print( id, print_chat, gBlockedWord );
 
 			if( get_pcvar_num( gUseLog ) > 0 ) 
 			{
@@ -78,10 +88,7 @@ public hook_say( id )
 	}
 
 	if( equali( UserMessage, gLastUserMessage[id] ) || g_Flooding[id] > nexTime )
-	{
-		new szUserName[ 32 ];
-		get_user_name( id, szUserName, cm( szUserName ) );
-		
+	{		
 		client_print( id, print_chat, gWarnMessage );
 
 		if( g_Flood[id] >= 3 )
@@ -98,7 +105,7 @@ public hook_say( id )
 			show_motd( id, get_pcvar_num( g_iPunishType ) ? BAN_MESSAGE : KICK_MESSAGE );
 
 			gBlockTimes[ id ] = 0;
-			clamp(get_pcvar_num( g_iPunishType ), 0, 1)
+			clamp(get_pcvar_num( g_iPunishType ), 0, 1);
 		
 			set_task( 2.8, "DoThePunish", id );	
 		}
@@ -111,7 +118,7 @@ public hook_say( id )
 
 			log_to_file( "addons/amxmodx/logs/AdvancedChatProtectionLogs.txt", szBuffer );
 		}
-		return PLUGIN_HANDLED
+		return PLUGIN_HANDLED;
 
 		
 	}
