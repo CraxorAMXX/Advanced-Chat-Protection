@@ -1,4 +1,5 @@
 #include <amxxce>
+#include <amxxce_stocks>
 #include <amxmisc>
 
 #pragma semicolon 1
@@ -28,7 +29,7 @@ public plugin_init( )
 	(
 		PluginName,
 		AMXX_CE_VERSION,
-		AMXX_CE_AUTHOR
+		AMXX_CE_DEV
 	);
  
 	register_clcmd( "say", "hook_say" );
@@ -138,7 +139,7 @@ public hook_say( id )
 
 public plugin_cfg( )
 {
-	auto_exec_config( "AdvancedChatProtectionFile" );
+	create_cfg( "AdvancedChatProtectionFile" );
 
 	static File = 0, Buffer[64], Location[256];
 	
